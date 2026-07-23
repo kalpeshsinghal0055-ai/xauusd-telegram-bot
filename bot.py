@@ -87,6 +87,7 @@ DEFAULT_DATA = {
     },
     "telegram_link": "https://t.me/BBFx_Ai",
     "website": "https://xauusdrobot.com",
+    "indicator_email": "kalpeshsinghal0055@gmail.com",
 }
 
 def load_data():
@@ -226,6 +227,36 @@ Fixed fractional position sizing — risk per trade always proportional to your 
 • Cost: 100% Free ✓
 """
 
+INDICATOR_MSG = """
+📊 *Get FREE Indicator Access!*
+
+Unlock our premium *BBFx AI Indicator* for MT4 & MT5 — completely free.
+
+━━━━━━━━━━━━━━━━━━━━
+✅ *How to Get Access — 3 Simple Steps:*
+
+*STEP 1 — Open a Vantage Account* 🏦
+Click the button below and register your live trading account with Vantage using our link.
+⏱ Takes only 5–10 minutes | Min deposit just $50
+
+*STEP 2 — Email the Admin* 📧
+After your account is created, send an email to:
+📩 `{email}`
+Include your *Vantage account number* and *registered name*.
+
+*STEP 3 — Get Your Indicator* 🎉
+Our team verifies your account and sends you the indicator files with full installation guide within 24 hours ✅
+
+━━━━━━━━━━━━━━━━━━━━
+🎯 *Indicator Features:*
+• Buy/Sell arrow signals for Gold (XAUUSD)
+• Works on MT4 & MT5
+• No repaint • Real-time alerts
+• Free installation support
+
+⚠️ *Important:* You must open your account using our Vantage link below to qualify.
+"""
+
 HELP_MSG = """
 📚 *Available Commands:*
 
@@ -235,6 +266,7 @@ HELP_MSG = """
 /vps — VPS hosting information
 /algos — Free trading robots list
 /features — Full EA feature list
+/indicator — Get free indicator access
 /help — This message
 
 ━━━━━━━━━━━━━━━━━━━━
@@ -251,6 +283,7 @@ def main_kb(data):
         [InlineKeyboardButton("⚙️ How It Works", callback_data="how"),
          InlineKeyboardButton("🤖 Free Algos", callback_data="algos")],
         [InlineKeyboardButton("🏦 Choose Broker", callback_data="brokers")],
+        [InlineKeyboardButton("📊 Get Indicator Access", callback_data="indicator")],
         [InlineKeyboardButton("💻 VPS Hosting", callback_data="vps"),
          InlineKeyboardButton("🔥 EA Features", callback_data="features")],
         [InlineKeyboardButton("📞 Telegram Support", url=tg),
@@ -286,6 +319,15 @@ def vps_kb(data):
     rows.append([InlineKeyboardButton("🏦 Select a Broker", callback_data="brokers"),
                  InlineKeyboardButton("🏠 Home", callback_data="main")])
     return InlineKeyboardMarkup(rows)
+
+def indicator_kb(data):
+    vantage_link = data.get("brokers", {}).get("vantage", {}).get("link", "https://vigco.co/la-com-inv/bbfxai")
+    tg = data.get("telegram_link", "https://t.me/BBFx_Ai")
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("✅ Open Vantage Account →", url=vantage_link)],
+        [InlineKeyboardButton("💬 Need Help? Message Us →", url=tg)],
+        [InlineKeyboardButton("🏠 Main Menu", callback_data="main")],
+    ])
 
 def back_kb():
     return InlineKeyboardMarkup([
@@ -389,6 +431,14 @@ async def cmd_algos(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def cmd_features(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(FEATURES_MSG, parse_mode="Markdown", reply_markup=back_kb())
 
+async def cmd_indicator(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    data = load_data()
+    email = data.get("indicator_email", "kalpeshsinghal0055@gmail.com")
+    await update.message.reply_text(
+        INDICATOR_MSG.format(email=email),
+        parse_mode="Markdown", reply_markup=indicator_kb(data)
+    )
+
 async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = load_data()
     await update.message.reply_text(HELP_MSG, parse_mode="Markdown", reply_markup=main_kb(data))
@@ -438,6 +488,12 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(ALGOS_MSG, parse_mode="Markdown", reply_markup=back_kb())
     elif d == "features":
         await query.edit_message_text(FEATURES_MSG, parse_mode="Markdown", reply_markup=back_kb())
+    elif d == "indicator":
+        email = data.get("indicator_email", "kalpeshsinghal0055@gmail.com")
+        await query.edit_message_text(
+            INDICATOR_MSG.format(email=email),
+            parse_mode="Markdown", reply_markup=indicator_kb(data)
+        )
 
     elif d.startswith("broker_") and not d.startswith("broker_adm"):
         key = d.replace("broker_", "")
@@ -788,6 +844,7 @@ def main():
     app.add_handler(CommandHandler("vps",      cmd_vps))
     app.add_handler(CommandHandler("algos",    cmd_algos))
     app.add_handler(CommandHandler("features", cmd_features))
+    app.add_handler(CommandHandler("indicator", cmd_indicator))
     app.add_handler(CommandHandler("help",     cmd_help))
     app.add_handler(CommandHandler("admin",    cmd_admin))
     app.add_handler(CallbackQueryHandler(handle_callback))
